@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="./css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<header class="w-full flex justify-between flex-row">
+    <h1 class="text-3xl m-3">Секретные данные</h1>
+    <button id="auth" class="w-fit h-fit bg-blue-600 rounded-2xl self-center m-3">
+        <p class="m-2">Войти</p>
+    </button>
+</header>
+<main class="w-full flex justify-center">
+<!--    <div class="flex flex-col justify-center">-->
+        <p id="secretData">Тута ничего нет 😗</p>
+<!--    </div>-->
+</main>
+<script>
+    document.getElementById('auth').addEventListener('click', () => {
+        window.location.href = '/auth.html';
+    });
+
+    const secretData = document.getElementById('secretData');
+
+    // Обернуть логику в асинхронную функцию
+    const loadProtectedData = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/protected', {
+                method: 'GET',
+                headers: {
+                    authorization: `Bearer ${localStorage.getItem('jwt')}`
+                }
+            });
+
+            const data = await response.json();
+            console.log('Ответ сервера:', data);
+
+            if(response.ok) {
+                secretData.textContent = data.message; // Предполагая, что сервер возвращает secretContent
+            } else {
+                alert(data.message || 'Ошибка доступа');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            // alert('Сетевая ошибка, попробуйте позже');
+        }
+    }
+
+    loadProtectedData();
+</script>
+</body>
+</html>

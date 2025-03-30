@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+    <link href="./css/style.css" rel="stylesheet" type="text/css">
+</head>
+<body class="w-screen h-screen flex justify-center">
+<div class="flex flex-row items-center justify-center">
+    <div class="flex flex-col rounded-2xl backdrop-brightness-90 p-3">
+        <h1 class="text-2xl text-center mb-4">Регистрация</h1>
+        <label class="mb-3 flex justify-between">Логин: <input id="login" type="text"></label>
+        <label class="mb-3 flex justify-between">Пароль: <input id="password" type="password"></label>
+        <button id="register" class="w-full h-fit bg-blue-600 rounded-2xl self-center" onclick="register()">
+            <p class="m-2">Зарегистрироваться</p>
+        </button>
+    </div>
+</div>
+<script>
+    const register = async () => {
+        const login = document.getElementById('login').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch('http://localhost:3000/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    login: login,
+                    password: password
+                })
+            });
+
+            // Парсим ответ сервера
+            const data = await response.json();
+            console.log('Ответ сервера:', data); // Вывод в консоль
+
+            if(response.ok) {
+                window.location.href = '/auth.html ';
+            } else {
+                alert(data.message || 'Ошибка регистрации');
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            alert('Сетевая ошибка, попробуйте позже');
+        }
+    }
+</script>
+</body>
+</html>
