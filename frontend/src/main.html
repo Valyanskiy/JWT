@@ -9,22 +9,34 @@
 <header class="w-full flex justify-between flex-row">
     <h1 class="text-3xl m-3">Секретные данные</h1>
     <button id="auth" class="w-fit h-fit bg-blue-600 rounded-2xl self-center m-3">
-        <p class="m-2">Войти</p>
+        <p id="authText" class="m-2">Войти</p>
     </button>
 </header>
 <main class="w-full flex justify-center">
-<!--    <div class="flex flex-col justify-center">-->
         <p id="secretData">Тута ничего нет 😗</p>
-<!--    </div>-->
 </main>
 <script>
-    document.getElementById('auth').addEventListener('click', () => {
-        window.location.href = '/auth.html';
-    });
+    const token = localStorage.getItem('jwt');
 
     const secretData = document.getElementById('secretData');
 
-    // Обернуть логику в асинхронную функцию
+    function parseJwt(token) {
+        try {
+            const base64Payload = token.split('.')[1];
+            return JSON.parse(atob(base64Payload));
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function isTokenExpired(token) {
+        const payload = parseJwt(token);
+        if (!payload || !payload.exp) return true; // Нет данных = токен невалиден
+
+        const currentTime = Math.floor(Date.now() / 1000); // Текущее время в секундах
+        return payload.exp < currentTime;
+    }
+
     const loadProtectedData = async () => {
         try {
             const response = await fetch('http://localhost:3000/protected', {
@@ -38,17 +50,26 @@
             console.log('Ответ сервера:', data);
 
             if(response.ok) {
-                secretData.textContent = data.message; // Предполагая, что сервер возвращает secretContent
+                secretData.textContent = data.message;
             } else {
                 alert(data.message || 'Ошибка доступа');
             }
         } catch (error) {
             console.error('Ошибка:', error);
-            // alert('Сетевая ошибка, попробуйте позже');
         }
     }
-
-    loadProtectedData();
+    if (!token || isTokenExpired(token)) {
+        document.getElementById('auth').addEventListener('click', () => {
+            window.location.href = '/auth.html';
+        });
+    } else {
+        document.getElementById('authText').innerText = 'Выйти'
+        document.getElementById('auth').addEventListener('click', () => {
+            localStorage.removeItem('jwt');
+            window.location.reload();
+        });
+        loadProtectedData();
+    }
 </script>
 </body>
 </html>
